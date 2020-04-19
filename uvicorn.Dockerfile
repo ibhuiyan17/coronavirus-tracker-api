@@ -1,14 +1,14 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
-
-ENV VARIABLE_NAME APP
+FROM python:3.7
 
 # COPY DEPENDENCIES
 COPY requirements.txt ./
 
 # COPY PROJECT
-COPY ./app /app/app
+COPY ./app /app
+
+EXPOSE 80
 
 # INSTALL DEPENDENCIES
 RUN pip install --no-cache-dir -r  requirements.txt
 
-EXPOSE 80
+CMD ["uvicorn", "app.main:APP", "--host", "0.0.0.0", "--port", "80"]

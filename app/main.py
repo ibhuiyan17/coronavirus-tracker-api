@@ -8,11 +8,11 @@ import pydantic
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from .data import data_source
-from .router.v1 import V1
-from .router.v2 import V2
+from .routers import V1, V2
 from .utils.httputils import setup_client_session, teardown_client_session
 
 # ############
@@ -26,7 +26,7 @@ APP = FastAPI(
         "API for tracking the global coronavirus (COVID-19, SARS-CoV-2) outbreak."
         " Project page: https://github.com/ExpDev07/coronavirus-tracker-api."
     ),
-    version="2.0.1",
+    version="2.0.3",
     docs_url="/",
     redoc_url="/docs",
     on_startup=[setup_client_session],
@@ -41,6 +41,7 @@ APP = FastAPI(
 APP.add_middleware(
     CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
+APP.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @APP.middleware("http")
@@ -59,7 +60,7 @@ async def add_datasource(request: Request, call_next):
     request.state.source = source
 
     # Move on...
-    LOGGER.info(f"source provided: {source.__class__.__name__}")
+    LOGGER.debug(f"source provided: {source.__class__.__name__}")
     response = await call_next(request)
     return response
 
